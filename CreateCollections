@@ -37,7 +37,7 @@ $Query =$coll.Query
 $Schedule = New-CMSchedule -Start (Get-Date).DateTime -RecurInterval Hours -RecurCount 24
 
 #new-item -NAme 'TEST' -Path $($SiteCode.Name+":\Device Collections\")
-#$FolderPath = "PS1:\Assets and Compliance\Overview\Device Collections\TEST"
+#$FolderPath = "XXX:\Assets and Compliance\Overview\Device Collections\TEST"
 #$folderPath=  $($SiteCode.Name+"Device Collections\TEST")
 
 New-Item -name "test2" -path PS1:\DeviceCollection\   #if you want to create a folder
@@ -62,7 +62,7 @@ Move-CMObject -FolderPath $path1 -InputObject (Get-CMDeviceCollection -Name $col
 #Move-CMObject -InputObject $NewCollection -FolderPath "XXX:\DeviceCollections\Software Collections"
 
 #$collID = Get-CMCollection -Name $name
-#Move-CMObject -InputObject '$name' -FolderPath 'PS1:\DeviceCollection\Adaptiva\Wave TEST'
+#Move-CMObject -InputObject '$name' -FolderPath 'TEST'
 #Move-CMObject -InputObject $collID -FolderPath $destcollfolder
 Invoke-CMDeviceCollectionUpdate -Name $collection.CollectionName
  }
