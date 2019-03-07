@@ -1,0 +1,76 @@
+#
+# Press 'F5' to run this script. Running this script will load the ConfigurationManager
+# module for Windows PowerShell and will connect to the site.
+#
+# # Uncomment the line below if running in an environment where script signing is 
+# required.
+#Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
+
+# Site configuration
+$SiteCode = "XXX" # Site code 
+$ProviderMachineName = "FQDN Primary/CAS server" # SMS Provider machine name
+
+# Customizations
+$initParams = @{}
+#$initParams.Add("Verbose", $true) # Uncomment this line to enable verbose logging
+#$initParams.Add("ErrorAction", "Stop") # Uncomment this line to stop the script on any errors
+
+# Do not change anything below this line
+
+# Import the ConfigurationManager.psd1 module 
+if((Get-Module ConfigurationManager) -eq $null) {
+    Import-Module "$($ENV:SMS_ADMIN_UI_PATH)\..\ConfigurationManager.psd1" @initParams 
+}
+
+# Connect to the site's drive if it is not already present
+if((Get-PSDrive -Name $SiteCode -PSProvider CMSite -ErrorAction SilentlyContinue) -eq $null) {
+    New-PSDrive -Name $SiteCode -PSProvider CMSite -Root $ProviderMachineName @initParams
+}
+
+# Set the current location to be the site code.
+Set-Location "$($SiteCode):\" @initParams
+
+ 
+$Coll = Import-Csv "E:\Testing\Collections.csv"  #list of colelction with queries
+$name = $coll.CollectionName
+$Query =$coll.Query
+$Schedule = New-CMSchedule -Start (Get-Date).DateTime -RecurInterval Hours -RecurCount 24
+
+#new-item -NAme 'TEST' -Path $($SiteCode.Name+":\Device Collections\")
+#$FolderPath = "PS1:\Assets and Compliance\Overview\Device Collections\TEST"
+#$folderPath=  $($SiteCode.Name+"Device Collections\TEST")
+
+New-Item -name "test2" -path PS1:\DeviceCollection\   #if you want to create a folder
+$path1= "XXX:\DeviceCollection\test2"
+
+$count = ($coll | Measure-object).count
+
+ if  ($count -eq 0){
+           Write-Host "no collections given in file, please provide machines information to import to collection"
+                   }
+ else { 
+      foreach($Collection in $coll) 
+      #for ($i=0; $i -lt ($count+1); $i++ )
+{
+
+#$Schedule= New-CMSchedule -Start '2019/01/01 00:00:00' -RecurInterval Days -RecurCount 1
+
+New-CMDeviceCollection -Name $Collection.CollectionName -LimitingCollectionName "All Systems" -RefreshSchedule $Schedule -RefreshType Periodic
+Add-CMDeviceCollectionQueryMembershipRule -CollectionName $collection.CollectionName -RuleName $collection.CollectionName -QueryExpression $collection.Query
+
+Move-CMObject -FolderPath $path1 -InputObject (Get-CMDeviceCollection -Name $collection.CollectionName)
+#Move-CMObject -InputObject $NewCollection -FolderPath "XXX:\DeviceCollections\Software Collections"
+
+#$collID = Get-CMCollection -Name $name
+#Move-CMObject -InputObject '$name' -FolderPath 'PS1:\DeviceCollection\Adaptiva\Wave TEST'
+#Move-CMObject -InputObject $collID -FolderPath $destcollfolder
+Invoke-CMDeviceCollectionUpdate -Name $collection.CollectionName
+ }
+ 
+}
+
+
+
+
+
+
